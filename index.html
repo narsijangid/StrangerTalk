@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stranger Group Video Call</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Stranger Group Video Call</h1>
+    <div id="group-info">
+      <span id="group-id"></span>
+    </div>
+    <button id="join-btn">Join Call</button>
+    <div class="video-grid" id="video-grid">
+      <!-- Video elements will be added here by JS -->
+    </div>
+    <div id="chat-container">
+      <div id="chat-messages"></div>
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" />
+        <button type="submit" id="chat-send">Send</button>
+      </form>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html> 
