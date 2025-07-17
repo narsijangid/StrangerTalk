@@ -1,556 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group Video Call - Connect with Strangers</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Interviewer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="app">
-        <div id="loginScreen">
-            <h1>Group Video Call</h1>
-            <p>Connect with 3 other strangers in video call</p>
-            <input type="text" id="usernameInput" placeholder="Enter your name" required>
-            <button id="joinBtn">Join Random Group</button>
-        </div>
-
-        <div id="callScreen" style="display: none;">
-            <div id="callHeader">
-                <h2>Group Call - <span id="groupId"></span></h2>
-                <div id="userCount">Users: <span id="userCountNum">0</span>/4</div>
-                <button id="leaveBtn">Leave Call</button>
-            </div>
-            
-            <div id="videoContainer">
-                <video id="localVideo" autoplay muted></video>
-                <video id="remoteVideo1" autoplay></video>
-                <video id="remoteVideo2" autoplay></video>
-                <video id="remoteVideo3" autoplay></video>
-            </div>
-            
-            <div id="controls">
-                <button id="toggleVideo">Turn Off Video</button>
-                <button id="toggleAudio">Mute Audio</button>
-            </div>
-            
-            <div id="usersList">
-                <h3>Users in call:</h3>
-                <ul id="usersListUl"></ul>
-            </div>
-        </div>
-
-        <div id="waitingScreen" style="display: none;">
-            <h2>Waiting for others to join...</h2>
-            <p>Current users: <span id="waitingUserCount">1</span>/4</p>
-            <div id="waitingUsers"></div>
-        </div>
+  <div id="app">
+    <!-- Landing Page -->
+    <div id="landing-section">
+      <h1>Random Interviewer</h1>
+      <button id="join-interviewer-btn">Join as Interviewer</button>
+      <button id="join-candidate-btn">Join as Candidate</button>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, push, onValue, remove, set, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    <!-- Name Prompt Modal -->
+    <div id="name-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2 id="modal-title">Enter your name</h2>
+        <input type="text" id="name-input" placeholder="Your name">
+        <button id="name-submit-btn">Submit</button>
+      </div>
+    </div>
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcjUtfNxD4fHv6uiHXAEkN8wXtQBkVbCA",
-            authDomain: "dazzlone.firebaseapp.com",
-            databaseURL: "https://dazzlone-default-rtdb.firebaseio.com",
-            projectId: "dazzlone",
-            storageBucket: "dazzlone.appspot.com",
-            messagingSenderId: "382204259427",
-            appId: "1:382204259427:web:082bded8ccdd8f03329c56",
-            measurementId: "G-CMCHP4WLH8"
-        };
+    <!-- Group List for Candidates -->
+    <div id="group-list-section" class="hidden">
+      <h2>Available Groups</h2>
+      <div id="group-list"></div>
+      <button id="back-to-landing-btn">Back</button>
+    </div>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+    <!-- Interview Room -->
+    <div id="interview-room-section" class="hidden">
+      <h2 id="room-title"></h2>
+      <div id="room-info"></div>
+      <div id="audio-status"></div>
+      <div id="video-call-area">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay muted playsinline></video>
+        <button id="chat-toggle-btn" class="icon-btn"><i class="fas fa-comments"></i></button>
+      </div>
+      <div id="call-controls">
+        <button id="screen-share-btn" class="icon-btn" title="Share Screen"><i class="fas fa-desktop"></i></button>
+        <button id="mute-btn" class="icon-btn" title="Mute/Unmute"><i class="fas fa-microphone"></i></button>
+        <button id="exit-btn" class="icon-btn exit" title="Exit"><i class="fas fa-phone-slash"></i></button>
+      </div>
+      <div id="chat-popup" class="hidden">
+        <div class="chat-popup-header">
+          <span>Chat</span>
+          <button id="chat-close-btn" class="chat-close-btn" title="Close"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="chat-section">
+          <div id="chat-messages"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Type a message...">
+            <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Global variables
-        let localStream = null;
-        let currentUser = null;
-        let currentGroup = null;
-        let peerConnections = {};
-        let remoteStreams = {};
-        
-        // STUN servers for WebRTC
-        const iceServers = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        };
-
-        // DOM elements
-        const loginScreen = document.getElementById('loginScreen');
-        const callScreen = document.getElementById('callScreen');
-        const waitingScreen = document.getElementById('waitingScreen');
-        const usernameInput = document.getElementById('usernameInput');
-        const joinBtn = document.getElementById('joinBtn');
-        const leaveBtn = document.getElementById('leaveBtn');
-        const localVideo = document.getElementById('localVideo');
-        const remoteVideos = [
-            document.getElementById('remoteVideo1'),
-            document.getElementById('remoteVideo2'),
-            document.getElementById('remoteVideo3')
-        ];
-        const toggleVideoBtn = document.getElementById('toggleVideo');
-        const toggleAudioBtn = document.getElementById('toggleAudio');
-        const groupIdSpan = document.getElementById('groupId');
-        const userCountSpan = document.getElementById('userCountNum');
-        const usersListUl = document.getElementById('usersListUl');
-        const waitingUserCount = document.getElementById('waitingUserCount');
-        const waitingUsers = document.getElementById('waitingUsers');
-
-        // Generate unique user ID
-        function generateUserId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-
-        // Find or create a group
-        async function findOrCreateGroup(username) {
-            const groupsRef = ref(database, 'groups');
-            
-            return new Promise((resolve) => {
-                onValue(groupsRef, (snapshot) => {
-                    const groups = snapshot.val() || {};
-                    
-                    // Find a group with less than 4 users
-                    for (const groupId in groups) {
-                        const group = groups[groupId];
-                        const userCount = Object.keys(group.users || {}).length;
-                        
-                        if (userCount < 4) {
-                            resolve(groupId);
-                            return;
-                        }
-                    }
-                    
-                    // Create new group if none found
-                    const newGroupRef = push(ref(database, 'groups'));
-                    const newGroupId = newGroupRef.key;
-                    
-                    set(newGroupRef, {
-                        created: Date.now(),
-                        users: {}
-                    });
-                    
-                    resolve(newGroupId);
-                }, { once: true });
-            });
-        }
-
-        // Join a group
-        async function joinGroup(groupId, username) {
-            const userId = generateUserId();
-            currentUser = { id: userId, name: username };
-            currentGroup = groupId;
-            
-            const userRef = ref(database, `groups/${groupId}/users/${userId}`);
-            await set(userRef, {
-                name: username,
-                joined: Date.now()
-            });
-            
-            // Remove user on disconnect
-            onDisconnect(userRef).remove();
-            
-            // Listen for group changes
-            const groupRef = ref(database, `groups/${groupId}`);
-            onValue(groupRef, handleGroupUpdate);
-            
-            // Listen for WebRTC signaling
-            const signalingRef = ref(database, `signaling/${groupId}`);
-            onValue(signalingRef, handleSignalingData);
-        }
-
-        // Handle group updates
-        function handleGroupUpdate(snapshot) {
-            const group = snapshot.val();
-            if (!group) return;
-            
-            const users = group.users || {};
-            const userCount = Object.keys(users).length;
-            
-            // Update UI
-            groupIdSpan.textContent = currentGroup;
-            userCountSpan.textContent = userCount;
-            waitingUserCount.textContent = userCount;
-            
-            // Update users list
-            usersListUl.innerHTML = '';
-            waitingUsers.innerHTML = '';
-            
-            Object.values(users).forEach(user => {
-                const li = document.createElement('li');
-                li.textContent = user.name;
-                usersListUl.appendChild(li);
-                
-                const div = document.createElement('div');
-                div.textContent = user.name;
-                waitingUsers.appendChild(div);
-            });
-            
-            // Show appropriate screen
-            if (userCount >= 2) {
-                waitingScreen.style.display = 'none';
-                callScreen.style.display = 'block';
-                
-                // Start video call if not already started
-                if (!localStream) {
-                    startVideoCall();
-                }
-            } else {
-                callScreen.style.display = 'none';
-                waitingScreen.style.display = 'block';
-            }
-        }
-
-        // Start video call
-        async function startVideoCall() {
-            try {
-                // Get user media
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
-                
-                localVideo.srcObject = localStream;
-                
-                // Create peer connections for other users
-                const groupRef = ref(database, `groups/${currentGroup}/users`);
-                onValue(groupRef, (snapshot) => {
-                    const users = snapshot.val() || {};
-                    
-                    Object.keys(users).forEach(userId => {
-                        if (userId !== currentUser.id && !peerConnections[userId]) {
-                            createPeerConnection(userId);
-                        }
-                    });
-                });
-                
-            } catch (error) {
-                console.error('Error accessing media devices:', error);
-                alert('Could not access camera/microphone. Please check permissions.');
-            }
-        }
-
-        // Create peer connection
-        function createPeerConnection(remoteUserId) {
-            const pc = new RTCPeerConnection(iceServers);
-            peerConnections[remoteUserId] = pc;
-            
-            // Add local stream to peer connection
-            localStream.getTracks().forEach(track => {
-                pc.addTrack(track, localStream);
-            });
-            
-            // Handle remote stream
-            pc.ontrack = (event) => {
-                remoteStreams[remoteUserId] = event.streams[0];
-                updateRemoteVideos();
-            };
-            
-            // Handle ICE candidates
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    sendSignalingData(remoteUserId, {
-                        type: 'ice-candidate',
-                        candidate: event.candidate
-                    });
-                }
-            };
-            
-            // Create offer if current user has smaller ID (to avoid conflicts)
-            if (currentUser.id < remoteUserId) {
-                createOffer(remoteUserId);
-            }
-        }
-
-        // Create offer
-        async function createOffer(remoteUserId) {
-            const pc = peerConnections[remoteUserId];
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            
-            sendSignalingData(remoteUserId, {
-                type: 'offer',
-                offer: offer
-            });
-        }
-
-        // Send signaling data
-        function sendSignalingData(remoteUserId, data) {
-            const signalingRef = ref(database, `signaling/${currentGroup}/${remoteUserId}_${currentUser.id}`);
-            set(signalingRef, {
-                from: currentUser.id,
-                to: remoteUserId,
-                data: data,
-                timestamp: Date.now()
-            });
-        }
-
-        // Handle signaling data
-        function handleSignalingData(snapshot) {
-            const signals = snapshot.val() || {};
-            
-            Object.values(signals).forEach(async (signal) => {
-                if (signal.to === currentUser.id) {
-                    const { from, data } = signal;
-                    const pc = peerConnections[from] || createPeerConnection(from);
-                    
-                    switch (data.type) {
-                        case 'offer':
-                            await pc.setRemoteDescription(data.offer);
-                            const answer = await pc.createAnswer();
-                            await pc.setLocalDescription(answer);
-                            
-                            sendSignalingData(from, {
-                                type: 'answer',
-                                answer: answer
-                            });
-                            break;
-                            
-                        case 'answer':
-                            await pc.setRemoteDescription(data.answer);
-                            break;
-                            
-                        case 'ice-candidate':
-                            await pc.addIceCandidate(data.candidate);
-                            break;
-                    }
-                }
-            });
-        }
-
-        // Update remote videos
-        function updateRemoteVideos() {
-            const streams = Object.values(remoteStreams);
-            
-            remoteVideos.forEach((video, index) => {
-                if (streams[index]) {
-                    video.srcObject = streams[index];
-                    video.style.display = 'block';
-                } else {
-                    video.style.display = 'none';
-                }
-            });
-        }
-
-        // Toggle video
-        function toggleVideo() {
-            const videoTrack = localStream.getVideoTracks()[0];
-            if (videoTrack) {
-                videoTrack.enabled = !videoTrack.enabled;
-                toggleVideoBtn.textContent = videoTrack.enabled ? 'Turn Off Video' : 'Turn On Video';
-            }
-        }
-
-        // Toggle audio
-        function toggleAudio() {
-            const audioTrack = localStream.getAudioTracks()[0];
-            if (audioTrack) {
-                audioTrack.enabled = !audioTrack.enabled;
-                toggleAudioBtn.textContent = audioTrack.enabled ? 'Mute Audio' : 'Unmute Audio';
-            }
-        }
-
-        // Leave group
-        async function leaveGroup() {
-            // Stop local stream
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            // Close peer connections
-            Object.values(peerConnections).forEach(pc => pc.close());
-            peerConnections = {};
-            remoteStreams = {};
-            
-            // Remove user from group
-            if (currentUser && currentGroup) {
-                const userRef = ref(database, `groups/${currentGroup}/users/${currentUser.id}`);
-                await remove(userRef);
-            }
-            
-            // Reset UI
-            loginScreen.style.display = 'block';
-            callScreen.style.display = 'none';
-            waitingScreen.style.display = 'none';
-            
-            currentUser = null;
-            currentGroup = null;
-        }
-
-        // Event listeners
-        joinBtn.addEventListener('click', async () => {
-            const username = usernameInput.value.trim();
-            if (!username) {
-                alert('Please enter your name');
-                return;
-            }
-            
-            loginScreen.style.display = 'none';
-            waitingScreen.style.display = 'block';
-            
-            const groupId = await findOrCreateGroup(username);
-            await joinGroup(groupId, username);
-        });
-
-        leaveBtn.addEventListener('click', leaveGroup);
-        toggleVideoBtn.addEventListener('click', toggleVideo);
-        toggleAudioBtn.addEventListener('click', toggleAudio);
-
-        // Handle page unload
-        window.addEventListener('beforeunload', leaveGroup);
-    </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        
-        #app {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        #loginScreen {
-            text-align: center;
-            padding: 50px;
-        }
-        
-        #loginScreen h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        #loginScreen p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        #usernameInput {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-            width: 200px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        button:hover {
-            background-color: #45a049;
-        }
-        
-        #callHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        
-        #videoContainer {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        video {
-            width: 100%;
-            height: 200px;
-            background-color: #000;
-            border-radius: 5px;
-        }
-        
-        #controls {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        #controls button {
-            margin: 0 10px;
-            background-color: #007bff;
-        }
-        
-        #controls button:hover {
-            background-color: #0056b3;
-        }
-        
-        #leaveBtn {
-            background-color: #dc3545;
-        }
-        
-        #leaveBtn:hover {
-            background-color: #c82333;
-        }
-        
-        #usersList {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        
-        #usersList h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        
-        #usersList ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        #usersList li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        #waitingScreen {
-            text-align: center;
-            padding: 50px;
-        }
-        
-        #waitingScreen h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        #waitingUsers {
-            margin-top: 20px;
-        }
-        
-        #waitingUsers div {
-            display: inline-block;
-            margin: 5px;
-            padding: 5px 10px;
-            background-color: #e9ecef;
-            border-radius: 15px;
-            font-size: 14px;
-        }
-    </style>
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/group.js"></script>
+  <script type="module" src="js/peer.js"></script>
+  <script type="module" src="js/chat.js"></script>
+  <script type="module" src="js/ui.js"></script>
 </body>
 </html>
