@@ -95,7 +95,9 @@ async function startAsInterviewer() {
     setupLocalMedia();
     listenChat();
     roomInfo.textContent = `Group ID: ${groupId}`;
+    roomInfo.className = 'header-info';
     audioStatus.textContent = 'Waiting...';
+    audioStatus.className = 'header-status waiting';
     if (groupNameElem) groupNameElem.textContent = userName;
   });
 }
@@ -133,7 +135,9 @@ async function joinAsCandidate(selectedGroupId) {
     showSection(interviewRoomSection);
     roomTitle.textContent = 'Interview Room';
     roomInfo.textContent = `Group ID: ${groupId}`;
+    roomInfo.className = 'header-info';
     audioStatus.textContent = 'Connecting...';
+    audioStatus.className = 'header-status waiting';
     listenGroup();
     setupLocalMedia();
     listenChat();
@@ -189,6 +193,7 @@ function setupLocalMedia() {
     }
     answerCall(remoteStream => {
       audioStatus.innerHTML = '<b>Connected!</b>';
+      audioStatus.className = 'header-status connected';
       playRemoteVideo(remoteStream);
       // Hide waiting message if present
       if (roomTitle.textContent.includes('Waiting')) {
@@ -202,6 +207,7 @@ function startCallIfReady() {
     callPeer(remotePeerId, window.localStream, call => {
       call.on('stream', remoteStream => {
         audioStatus.innerHTML = '<b>Connected!</b>';
+        audioStatus.className = 'header-status connected';
         playRemoteVideo(remoteStream);
         // Hide waiting message if present
         if (roomTitle.textContent.includes('Waiting')) {
