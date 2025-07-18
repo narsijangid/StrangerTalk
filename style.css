@@ -928,3 +928,100 @@ button:hover {
     max-width: 98vw;
   }
 } 
+
+/* --- Interview Room Glassy Header --- */
+.interview-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 64px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 3px solid var(--orange);
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.header-group-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.group-icon {
+  font-size: 1.7rem;
+  color: var(--orange-dark);
+  background: #fff;
+  border-radius: 50%;
+  border: 2.5px solid var(--orange);
+  padding: 6px 10px 6px 10px;
+  box-shadow: 0 2px 8px rgba(255,136,0,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-group-name {
+  font-size: 1.13rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 8px rgba(255,136,0,0.10);
+}
+#chat-toggle-btn {
+  z-index: 20;
+}
+@media (max-width: 700px) {
+  .interview-header {
+    min-height: 48px;
+    padding: 0 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+  .group-icon {
+    font-size: 1.2rem;
+    padding: 4px 7px 4px 7px;
+  }
+  .header-group-name {
+    font-size: 0.98rem;
+  }
+}
+/* --- Polish Local Video --- */
+#local-video {
+  border-radius: 18px !important;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18), 0 0 0 4px rgba(0,123,255,0.10);
+  background: #222;
+  right: 24px;
+  bottom: 100px;
+  width: 120px;
+  height: 90px;
+  max-width: 140px;
+  max-height: 110px;
+  min-width: 70px;
+  min-height: 50px;
+  transition: width 0.2s, height 0.2s, bottom 0.2s, right 0.2s;
+}
+@media (max-width: 700px) {
+  #local-video {
+    width: 80px;
+    height: 60px;
+    right: 10px;
+    bottom: 80px;
+    max-width: 90px;
+    max-height: 70px;
+    min-width: 50px;
+    min-height: 40px;
+    border-width: 2px;
+  }
+} 

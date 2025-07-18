@@ -44,9 +44,17 @@
 
     <!-- Interview Room -->
     <div id="interview-room-section" class="hidden">
-      <h2 id="room-title"></h2>
-      <div id="room-info"></div>
-      <div id="audio-status"></div>
+      <div id="interview-header" class="interview-header">
+        <div class="header-group">
+          <div class="header-group-row">
+            <span class="group-icon"><i class="fas fa-users"></i></span>
+            <div id="group-name" class="header-group-name"></div>
+          </div>
+          <div id="room-title" class="header-title"></div>
+          <div id="room-info" class="header-info"></div>
+        </div>
+        <div id="audio-status" class="header-status"></div>
+      </div>
       <div id="video-call-area">
         <video id="remote-video" autoplay playsinline></video>
         <video id="local-video" autoplay muted playsinline></video>

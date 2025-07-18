@@ -23,6 +23,7 @@ const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat-btn');
 const modalBlurOverlay = document.getElementById('modal-blur-overlay');
+const groupNameElem = document.getElementById('group-name');
 
 // State
 let userRole = null;
@@ -55,7 +56,7 @@ function hideModal() {
 let pendingRole = null;
 document.getElementById('join-interviewer-btn').onclick = () => {
   pendingRole = 'interviewer';
-  showModal('Enter your name');
+  showModal('Enter group name');
 };
 document.getElementById('join-candidate-btn').onclick = () => {
   pendingRole = 'candidate';
@@ -85,6 +86,7 @@ async function startAsInterviewer() {
   roomTitle.textContent = 'Waiting for Candidate to Join...';
   roomInfo.textContent = '';
   audioStatus.textContent = '';
+  if (groupNameElem) groupNameElem.textContent = userName;
   // Create Peer
   createPeer(async id => {
     peerId = id;
@@ -93,6 +95,8 @@ async function startAsInterviewer() {
     setupLocalMedia();
     listenChat();
     roomInfo.textContent = `Group ID: ${groupId}`;
+    audioStatus.textContent = 'Waiting...';
+    if (groupNameElem) groupNameElem.textContent = userName;
   });
 }
 
@@ -109,7 +113,13 @@ async function startAsCandidate() {
   groups.forEach(g => {
     const card = document.createElement('div');
     card.className = 'group-card';
-    card.innerHTML = `<span>Interviewer: <b>${g.createdBy}</b></span><button>Join</button>`;
+    card.innerHTML = `
+      <div>
+        <div class="group-name"><b>${g.createdBy}</b></div>
+        <div class="group-host">Host: <b>${g.users && g.users.interviewer ? g.createdBy : 'Gone'}</b></div>
+      </div>
+      <button>Join</button>
+    `;
     card.querySelector('button').onclick = () => joinAsCandidate(g.id);
     groupList.appendChild(card);
   });
@@ -123,6 +133,7 @@ async function joinAsCandidate(selectedGroupId) {
     showSection(interviewRoomSection);
     roomTitle.textContent = 'Interview Room';
     roomInfo.textContent = `Group ID: ${groupId}`;
+    audioStatus.textContent = 'Connecting...';
     listenGroup();
     setupLocalMedia();
     listenChat();
@@ -139,13 +150,30 @@ function listenGroup() {
       exitToLanding();
       return;
     }
+    // Set group name in header for candidate (from group.createdBy)
+    if (groupNameElem && group.createdBy) groupNameElem.textContent = group.createdBy;
     // Set remote peerId
-    if (userRole === 'interviewer' && group.users && group.users.candidate) {
-      remotePeerId = group.users.candidate.peerId;
-      startCallIfReady();
-    } else if (userRole === 'candidate' && group.users && group.users.interviewer) {
-      remotePeerId = group.users.interviewer.peerId;
-      startCallIfReady();
+    if (userRole === 'interviewer' && group.users && group.users.candidates) {
+      // Interviewer: connect to first candidate
+      const candidateIds = Object.keys(group.users.candidates || {});
+      if (candidateIds.length > 0) {
+        remotePeerId = group.users.candidates[candidateIds[0]].peerId;
+        startCallIfReady();
+      }
+    } else if (userRole === 'candidate') {
+      if (group.users && group.users.interviewer) {
+        remotePeerId = group.users.interviewer.peerId;
+        startCallIfReady();
+      } else if (group.users && group.users.candidates) {
+        // No interviewer, connect to another candidate
+        const candidateIds = Object.keys(group.users.candidates || {});
+        // Find another candidate (not self)
+        const otherCandidateId = candidateIds.find(id => id !== peerId);
+        if (otherCandidateId) {
+          remotePeerId = group.users.candidates[otherCandidateId].peerId;
+          startCallIfReady();
+        }
+      }
     }
   });
 }
@@ -164,7 +192,7 @@ function setupLocalMedia() {
       playRemoteVideo(remoteStream);
       // Hide waiting message if present
       if (roomTitle.textContent.includes('Waiting')) {
-        roomTitle.textContent = '';
+        roomTitle.textContent = 'Interview Room';
       }
     });
   });
@@ -177,7 +205,7 @@ function startCallIfReady() {
         playRemoteVideo(remoteStream);
         // Hide waiting message if present
         if (roomTitle.textContent.includes('Waiting')) {
-          roomTitle.textContent = '';
+          roomTitle.textContent = 'Interview Room';
         }
       });
     });

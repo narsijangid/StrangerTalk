@@ -6,36 +6,60 @@ function randomGroupId() {
 
 // Create a new group as interviewer
 export async function createGroup(interviewerName, peerId) {
+  // Ensure unique group name
+  const groupsRef = ref(db, 'groups');
+  const snapshot = await get(groupsRef);
+  let uniqueName = interviewerName;
+  if (snapshot.exists()) {
+    const groups = snapshot.val();
+    const names = Object.values(groups).map(g => g.createdBy);
+    if (names.includes(interviewerName)) {
+      // Find a unique suffix
+      let suffix = 2;
+      let candidateName = `${interviewerName}★`;
+      while (names.includes(candidateName)) {
+        candidateName = `${interviewerName}${suffix}`;
+        suffix++;
+      }
+      uniqueName = candidateName;
+    }
+  }
   const groupId = randomGroupId();
   const groupRef = ref(db, `groups/${groupId}`);
   await set(groupRef, {
-    createdBy: interviewerName,
+    createdBy: uniqueName,
     status: 'waiting',
     users: {
-      interviewer: { name: interviewerName, peerId }
+      interviewer: { name: uniqueName, peerId }
     }
   });
   return groupId;
 }
 
-// Fetch all groups with status 'waiting'
+// Fetch all groups that are available for candidates to join
 export async function fetchWaitingGroups() {
   const groupsRef = ref(db, 'groups');
   const snapshot = await get(groupsRef);
   if (!snapshot.exists()) return [];
   const groups = snapshot.val();
-  // Filter groups with status 'waiting'
+  // Show groups that are:
+  // - status 'waiting' (host present, waiting for candidate)
+  // - OR status 'active' and interviewer is missing (host left, but candidates can join)
   return Object.entries(groups)
-    .filter(([id, data]) => data.status === 'waiting')
+    .filter(([id, data]) =>
+      (data.status === 'waiting') ||
+      (data.status === 'active' && (!data.users || !data.users.interviewer))
+    )
     .map(([id, data]) => ({ id, ...data }));
 }
 
 // Join a group as candidate
 export async function joinGroup(groupId, candidateName, peerId) {
   const groupRef = ref(db, `groups/${groupId}`);
+  // Add candidate to users.candidates
   await update(groupRef, {
     status: 'active',
-    'users/candidate': { name: candidateName, peerId }
+    [`users/candidates/${peerId}`]: { name: candidateName, peerId }
   });
 }
 
