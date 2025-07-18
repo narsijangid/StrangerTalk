@@ -25,6 +25,31 @@ const sendChatBtn = document.getElementById('send-chat-btn');
 const modalBlurOverlay = document.getElementById('modal-blur-overlay');
 const groupNameElem = document.getElementById('group-name');
 
+// Add custom modal HTML to the page if not present
+if (!document.getElementById('custom-alert-modal')) {
+  const modal = document.createElement('div');
+  modal.id = 'custom-alert-modal';
+  modal.className = 'custom-alert-modal hidden';
+  modal.innerHTML = `
+    <div class="custom-alert-content">
+      <div class="custom-alert-title">Group Ended</div>
+      <button id="custom-alert-ok-btn" class="custom-alert-btn">OK</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+const customAlertModal = document.getElementById('custom-alert-modal');
+const customAlertOkBtn = document.getElementById('custom-alert-ok-btn');
+if (customAlertOkBtn) {
+  customAlertOkBtn.onclick = () => {
+    customAlertModal.classList.add('hidden');
+    exitToLanding();
+  };
+}
+function showCustomAlert() {
+  customAlertModal.classList.remove('hidden');
+}
+
 // State
 let userRole = null;
 let userName = '';
@@ -150,8 +175,7 @@ function listenGroup() {
   groupListener = onGroupChange(groupId, group => {
     if (!group) {
       // Group deleted
-      alert('Group ended.');
-      exitToLanding();
+      showCustomAlert();
       return;
     }
     // Set group name in header for candidate (from group.createdBy)
