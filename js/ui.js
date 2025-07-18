@@ -22,6 +22,7 @@ const chatSection = document.getElementById('chat-section');
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat-btn');
+const modalBlurOverlay = document.getElementById('modal-blur-overlay');
 
 // State
 let userRole = null;
@@ -42,10 +43,12 @@ function showModal(title) {
   modalTitle.textContent = title;
   nameInput.value = '';
   nameModal.classList.remove('hidden');
+  if (modalBlurOverlay) modalBlurOverlay.classList.remove('hidden');
   nameInput.focus();
 }
 function hideModal() {
   nameModal.classList.add('hidden');
+  if (modalBlurOverlay) modalBlurOverlay.classList.add('hidden');
 }
 
 // Landing Page Events
@@ -159,6 +162,10 @@ function setupLocalMedia() {
     answerCall(remoteStream => {
       audioStatus.innerHTML = '<b>Connected!</b>';
       playRemoteVideo(remoteStream);
+      // Hide waiting message if present
+      if (roomTitle.textContent.includes('Waiting')) {
+        roomTitle.textContent = '';
+      }
     });
   });
 }
@@ -168,6 +175,10 @@ function startCallIfReady() {
       call.on('stream', remoteStream => {
         audioStatus.innerHTML = '<b>Connected!</b>';
         playRemoteVideo(remoteStream);
+        // Hide waiting message if present
+        if (roomTitle.textContent.includes('Waiting')) {
+          roomTitle.textContent = '';
+        }
       });
     });
   }

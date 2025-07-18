@@ -11,17 +11,27 @@
   <div id="app">
     <!-- Landing Page -->
     <div id="landing-section">
-      <h1>Random Interviewer</h1>
-      <button id="join-interviewer-btn">Join as Interviewer</button>
-      <button id="join-candidate-btn">Join as Candidate</button>
+      <div class="landing-cards">
+        <div class="landing-card interviewer-card">
+          <div class="card-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="card-title">Interviewer</div>
+          <button id="join-interviewer-btn" class="landing-btn">Join as Interviewer</button>
+        </div>
+        <div class="landing-card candidate-card">
+          <div class="card-icon"><i class="fas fa-user-graduate"></i></div>
+          <div class="card-title">Candidate</div>
+          <button id="join-candidate-btn" class="landing-btn">Join as Candidate</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Name Prompt Modal -->
+    <!-- Name Prompt Modal with Blur -->
+    <div id="modal-blur-overlay" class="modal-blur hidden"></div>
     <div id="name-modal" class="modal hidden">
-      <div class="modal-content">
+      <div class="modal-content name-modal-content">
         <h2 id="modal-title">Enter your name</h2>
         <input type="text" id="name-input" placeholder="Your name">
-        <button id="name-submit-btn">Submit</button>
+        <button id="name-submit-btn" class="modal-btn">Submit</button>
       </div>
     </div>
 
