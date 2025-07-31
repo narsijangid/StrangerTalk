@@ -9,8 +9,80 @@
 </head>
 <body>
   <div id="app">
+    <!-- Authentication Section -->
+    <div id="auth-section">
+      <div class="auth-container">
+        <div class="auth-card">
+          <div class="auth-header">
+            <h1>Welcome to Zair</h1>
+            <p>Sign in to start your interview experience</p>
+          </div>
+          
+          <!-- Login Form -->
+          <div id="login-form" class="auth-form">
+            <h2>Sign In</h2>
+            <div class="form-group">
+              <input type="email" id="login-email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+              <input type="password" id="login-password" placeholder="Password" required>
+            </div>
+            <button id="login-btn" class="auth-btn primary">Sign In</button>
+            <div class="auth-divider">
+              <span>or</span>
+            </div>
+            <button id="google-login-btn" class="auth-btn google">
+              <i class="fab fa-google"></i>
+              Sign in with Google
+            </button>
+            <p class="auth-switch">
+              Don't have an account? <a href="#" id="show-signup">Sign Up</a>
+            </p>
+          </div>
+
+          <!-- Signup Form -->
+          <div id="signup-form" class="auth-form hidden">
+            <h2>Create Account</h2>
+            <div class="form-group">
+              <input type="text" id="signup-name" placeholder="Full Name" required>
+            </div>
+            <div class="form-group">
+              <input type="email" id="signup-email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+              <input type="password" id="signup-password" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+              <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+            </div>
+            <button id="signup-btn" class="auth-btn primary">Create Account</button>
+            <div class="auth-divider">
+              <span>or</span>
+            </div>
+            <button id="google-signup-btn" class="auth-btn google">
+              <i class="fab fa-google"></i>
+              Sign up with Google
+            </button>
+            <p class="auth-switch">
+              Already have an account? <a href="#" id="show-login">Sign In</a>
+            </p>
+          </div>
+
+          <div id="auth-error" class="auth-error hidden"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Landing Page -->
-    <div id="landing-section">
+    <div id="landing-section" class="hidden">
+      <div class="user-info">
+        <button id="ai-assistant-btn" class="ai-assistant-btn" title="AI Interview Assistant">
+          <img id="ailogocercl" src="https://img.freepik.com/premium-photo/colorful-ai-tech-logo-high-quality-ai-generated-image_721440-9944.jpg?semt=ais_hybrid&w=740&q=80" alt="">
+        </button>
+        <button id="profile-toggle-btn" class="profile-toggle-btn" title="Profile">
+          <img id="user-avatar-circle" src="https://ghoshak-website-builder.s3.ap-south-1.amazonaws.com/a3810e6d-543b-49f5-89f3-d29dff2c2aad.jpeg" alt="Profile" class="profile-avatar">
+        </button>
+      </div>
       <div class="landing-cards">
         <div class="landing-card interviewer-card">
           <div class="card-icon"><i class="fas fa-user-tie"></i></div>
@@ -47,11 +119,12 @@
       <div id="interview-header" class="interview-header">
         <div class="header-group">
           <div class="header-group-row">
-            <span class="group-icon"><i class="fas fa-users"></i></span>
+            <span class="group-icon"><img src="https://cdn-icons-png.flaticon.com/256/4115/4115597.png" alt=""></span>
             <div id="group-name" class="header-group-name"></div>
           </div>
           <div id="room-title" class="header-title"></div>
           <div id="room-info" class="header-info"></div>
+          <div id="current-user" class="header-user"></div>
         </div>
         <div id="audio-status" class="header-status"></div>
       </div>
@@ -59,10 +132,22 @@
         <video id="remote-video" autoplay playsinline></video>
         <video id="local-video" autoplay muted playsinline></video>
         <button id="chat-toggle-btn" class="icon-btn"><i class="fas fa-comments"></i></button>
+        <button id="options-btn" class="icon-btn options" title="Options"><i class="fas fa-ellipsis-v"></i></button>
+        <div id="options-popup" class="options-popup hidden">
+          <div class="options-popup-header">
+            <span>Options</span>
+            <button id="close-options-btn" class="options-close-btn" title="Close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <button id="block-user-btn" class="option-btn">Block User</button>
+          <button id="report-user-btn" class="option-btn">Report User</button>
+        </div>
       </div>
       <div id="call-controls">
         <button id="screen-share-btn" class="icon-btn" title="Share Screen"><i class="fas fa-desktop"></i></button>
         <button id="mute-btn" class="icon-btn" title="Mute/Unmute"><i class="fas fa-microphone"></i></button>
+        <button id="video-toggle-btn" class="icon-btn" title="Video On/Off"><i class="fas fa-video"></i></button>
         <button id="exit-btn" class="icon-btn exit" title="Exit"><i class="fas fa-phone-slash"></i></button>
       </div>
       <div id="chat-popup" class="hidden">
@@ -79,13 +164,141 @@
         </div>
       </div>
     </div>
+    
+    <!-- Profile Sidebar -->
+    <div id="profile-sidebar" class="profile-sidebar">
+      <div class="profile-sidebar-header">
+        <h3>Profile</h3>
+        <button id="close-sidebar-btn" class="close-sidebar-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="profile-sidebar-content">
+        <div class="profile-user-info">
+          <img id="sidebar-user-avatar" src="https://www.iconpacks.net/icons/1/free-user-group-icon-296-thumb.png" alt="User Avatar" class="sidebar-avatar">
+          <div class="profile-user-details">
+            <h4 id="sidebar-user-name">User</h4>
+            <p id="sidebar-user-email">user@example.com</p>
+          </div>
+        </div>
+        <div class="profile-sidebar-actions">
+          <button id="blocked-users-btn" class="profile-btn">
+            <i class="fas fa-user-slash"></i>
+            Blocked Users
+          </button>
+           <a href="https://dazzloneapps.blogspot.com/p/privacy-policy.html" class="profile-btn">
+    <i class="fas fa-shield-alt"></i>
+    Privacy Policy
+  </a>
+  <a href="https://dazzloneapps.blogspot.com/p/disclaimer.html" class="profile-btn">
+    <i class="fas fa-exclamation-triangle"></i>
+    Disclaimer
+  </a>
+  <a href="https://dazzloneapps.blogspot.com/p/about-us.html" class="profile-btn">
+    <i class="fas fa-info-circle"></i>
+    About Us
+  </a>
+          <button id="sidebar-logout-btn" class="profile-btn logout">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="ai-assistant-modal" class="ai-modal hidden">
+      <div class="ai-modal-content">
+        <div class="ai-modal-header">
+          <h2>AI Interview Assistant</h2>
+          <button id="close-ai-modal-btn" class="ai-modal-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="ai-modal-body">
+          <div class="topic-input-section">
+            <label for="topic-input">Enter Interview Topic:</label>
+            <input type="text" id="topic-input" placeholder="e.g., JavaScript, React, System Design, etc." maxlength="100">
+          </div>
+          <div class="ai-options">
+            <button id="generate-mcq-btn" class="ai-option-btn mcq-btn">
+              <i class="fas fa-list-ol"></i>
+              Generate 10 MCQs
+            </button>
+            <button id="generate-theory-btn" class="ai-option-btn theory-btn">
+              <i class="fas fa-book-open"></i>
+              Generate Theory Questions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Results Modal -->
+    <div id="ai-results-modal" class="ai-results-modal hidden">
+      <div class="ai-results-content">
+        <div class="ai-results-header">
+          <h2 id="results-title">Results</h2>
+          <button id="close-results-btn" class="ai-modal-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="ai-results-body" class="ai-results-body">
+          <!-- Results will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MCQ Quiz Modal -->
+    <div id="mcq-quiz-modal" class="ai-results-modal hidden">
+      <div class="ai-results-content">
+        <div class="ai-results-header">
+          <h2>MCQ Quiz - <span id="mcq-topic-title"></span></h2>
+          <button id="close-mcq-btn" class="ai-modal-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="quiz-progress">
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <span id="question-counter">Question 1 of 12</span>
+        </div>
+        <div id="mcq-quiz-body" class="ai-results-body">
+          <!-- MCQ questions will be populated here -->
+        </div>
+        <div class="quiz-actions">
+          <button id="next-question-btn" class="quiz-btn" style="display: none;">Next Question</button>
+          <button id="submit-quiz-btn" class="quiz-btn" style="display: none;">Submit Quiz</button>
+          <button id="restart-quiz-btn" class="quiz-btn" style="display: none;">Restart Quiz</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocked Users Popup -->
+    <div id="blocked-users-popup" class="blocked-users-popup">
+      <div class="blocked-users-header">
+        <h3>Blocked Users</h3>
+        <button id="close-blocked-users-btn" class="close-blocked-users-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="blocked-users-content">
+        <div id="blocked-users-list" class="blocked-users-list">
+          <p class="no-blocked-users">No user has been blocked yet.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  <script type="module" src="js/firebase.js"></script>
-  <script type="module" src="js/group.js"></script>
-  <script type="module" src="js/peer.js"></script>
-  <script type="module" src="js/chat.js"></script>
-  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="/firebase.js"></script>
+  <script type="module" src="/auth.js"></script>
+  <script type="module" src="/auth-ui.js"></script>
+  <script type="module" src="/group.js"></script>
+  <script type="module" src="/peer.js"></script>
+  <script type="module" src="/chat.js"></script>
+  <script type="module" src="/ui.js"></script>
+  <script src="/ai-assistant.js"></script>
 </body>
 </html>

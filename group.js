@@ -5,20 +5,20 @@ function randomGroupId() {
 }
 
 // Create a new group as interviewer
-export async function createGroup(interviewerName, peerId) {
+export async function createGroup(roomName, category, peerId) {
   // Ensure unique group name
   const groupsRef = ref(db, 'groups');
   const snapshot = await get(groupsRef);
-  let uniqueName = interviewerName;
+  let uniqueName = roomName;
   if (snapshot.exists()) {
     const groups = snapshot.val();
-    const names = Object.values(groups).map(g => g.createdBy);
-    if (names.includes(interviewerName)) {
+    const names = Object.values(groups).map(g => g.roomName);
+    if (names.includes(roomName)) {
       // Find a unique suffix
       let suffix = 2;
-      let candidateName = `${interviewerName}★`;
+      let candidateName = `${roomName}★`;
       while (names.includes(candidateName)) {
-        candidateName = `${interviewerName}${suffix}`;
+        candidateName = `${roomName}${suffix}`;
         suffix++;
       }
       uniqueName = candidateName;
@@ -27,6 +27,8 @@ export async function createGroup(interviewerName, peerId) {
   const groupId = randomGroupId();
   const groupRef = ref(db, `groups/${groupId}`);
   await set(groupRef, {
+    roomName: uniqueName,
+    category: category,
     createdBy: uniqueName,
     status: 'waiting',
     users: {
@@ -55,6 +57,15 @@ export async function fetchWaitingGroups() {
 
 // Join a group as candidate
 export async function joinGroup(groupId, candidateName, peerId) {
+  // Check if user is blocked
+  const blockedRef = ref(db, `blockedUsers/${groupId}/${peerId}`);
+  const blockedSnapshot = await get(blockedRef);
+  
+  if (blockedSnapshot.exists()) {
+    // User is blocked from this group
+    throw new Error('You have been blocked from joining this group.');
+  }
+  
   const groupRef = ref(db, `groups/${groupId}`);
   // Add candidate to users.candidates
   await update(groupRef, {
@@ -64,9 +75,16 @@ export async function joinGroup(groupId, candidateName, peerId) {
 }
 
 // Remove user from group
-export async function removeUser(groupId, role) {
-  const userRef = ref(db, `groups/${groupId}/users/${role}`);
-  await remove(userRef);
+export async function removeUser(groupId, role, peerId = null) {
+  if (role === 'candidate' && peerId) {
+    // Remove specific candidate by peerId
+    const candidateRef = ref(db, `groups/${groupId}/users/candidates/${peerId}`);
+    await remove(candidateRef);
+  } else {
+    // Remove interviewer or general user
+    const userRef = ref(db, `groups/${groupId}/users/${role}`);
+    await remove(userRef);
+  }
 }
 
 // Delete group if both users are gone
@@ -74,7 +92,7 @@ export async function deleteGroupIfEmpty(groupId) {
   const groupRef = ref(db, `groups/${groupId}/users`);
   const snapshot = await get(groupRef);
   const users = snapshot.val();
-  if (!users || (!users.interviewer && !users.candidate)) {
+  if (!users || (!users.interviewer && (!users.candidates || Object.keys(users.candidates).length === 0))) {
     await remove(ref(db, `groups/${groupId}`));
   }
 }
@@ -85,4 +103,4 @@ export function onGroupChange(groupId, callback) {
   return onValue(groupRef, snapshot => {
     callback(snapshot.val());
   });
-} 
+}
