@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjUtfNxD4fHv6uiHXAEkN8wXtQBkVbCA",
-  authDomain: "dazzlone.firebaseapp.com",
+  authDomain: "https://fffffffffffddds.netlify.app",
   databaseURL: "https://dazzlone-default-rtdb.firebaseio.com",
   projectId: "dazzlone",
   storageBucket: "dazzlone.appspot.com",
