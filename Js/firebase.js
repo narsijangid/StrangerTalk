@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 
 const firebaseConfig = {
   apiKey: "AIzaSyBSrqPhvb7bY1Po4rmiBW7_wXokC-VKXgA",
-  authDomain: "https://zair.netlify.app",
+  authDomain: "zairap.netlify.app",
   databaseURL: "https://ai-dazz-default-rtdb.firebaseio.com",
   projectId: "ai-dazz",
   storageBucket: "ai-dazz.firebasestorage.app",
