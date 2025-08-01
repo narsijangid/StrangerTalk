@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjUtfNxD4fHv6uiHXAEkN8wXtQBkVbCA",
-  authDomain: "https://zairapp.vercel.app",
+  authDomain: "zairapp.vercel.app",
   databaseURL: "https://dazzlone-default-rtdb.firebaseio.com",
   projectId: "dazzlone",
   storageBucket: "dazzlone.appspot.com",
