@@ -483,17 +483,19 @@ videoToggleBtn.onclick = () => {
   }
   // Show/hide placeholder
   if (isVideoOff) {
-    const defaultImg = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+    const defaultImg = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif?t=' + Date.now();
     if (localVideo) {
       localVideo.srcObject = null;
-      localVideo.poster = defaultImg;
+      localVideo.poster = '';
       localVideo.style.background = `url('${defaultImg}') center center / contain no-repeat`;
+      localVideo.style.backgroundColor = 'transparent';
     }
   } else {
     if (localVideo) {
       localVideo.srcObject = window.localStream;
       localVideo.poster = '';
       localVideo.style.background = '';
+      localVideo.style.backgroundColor = '';
     }
   }
 };
@@ -637,18 +639,18 @@ document.addEventListener('click', e => {
 function setDefaultVideoPlaceholders() {
   const localVideo = document.getElementById('local-video');
   const remoteVideo = document.getElementById('remote-video');
-  const defaultImg = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+  const defaultImg = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif?t=' + Date.now();
   if (localVideo) {
     localVideo.srcObject = null;
     localVideo.poster = '';
     localVideo.style.background = `url('${defaultImg}') center center / contain no-repeat`;
+    localVideo.style.backgroundColor = 'transparent';
   }
   if (remoteVideo) {
     remoteVideo.srcObject = null;
     remoteVideo.poster = '';
-    remoteVideo.style.background = `url('${defaultImg}') center center / 222px  no-repeat`;
-    remoteVideo.style.objectFit = 'contain';
-    remoteVideo.style.backgroundColor = '#fff'; // fallback background is white
+    remoteVideo.style.background = `url('${defaultImg}') center center / cover no-repeat`;
+    remoteVideo.style.backgroundColor = 'transparent';
   }
 }
 
@@ -690,7 +692,7 @@ function updateSidebarUserInfo() {
   if (user) {
     sidebarUsername.textContent = user.displayName || user.email.split('@')[0];
     sidebarUserEmail.textContent = user.email;
-    sidebarAvatar.src = user.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+    sidebarAvatar.src = user.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif?t=' + Date.now();
   }
 }
 
@@ -735,7 +737,7 @@ async function loadBlockedUsers() {
       for (const [userId, userData] of Object.entries(blockedUsers)) {
         // Try to get actual user data from Firebase if available
         let displayName = userData.name || 'Unknown User';
-        let userPhoto = userData.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+        let userPhoto = userData.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif?t=' + Date.now();
         
         // Try to fetch user's actual data from the users collection
         try {
@@ -906,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (user && profileToggleBtn) {
     const avatarImg = profileToggleBtn.querySelector('.profile-avatar');
     if (avatarImg) {
-      avatarImg.src = user.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+      avatarImg.src = user.photoURL || 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif?t=' + Date.now();
     }
   }
 });
