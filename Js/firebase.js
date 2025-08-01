@@ -4,14 +4,14 @@ import { getDatabase, ref, set, onValue, remove, update, get, child, query, orde
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBcjUtfNxD4fHv6uiHXAEkN8wXtQBkVbCA",
+  apiKey: "AIzaSyBSrqPhvb7bY1Po4rmiBW7_wXokC-VKXgA",
   authDomain: "zair.netlify.app",
-  databaseURL: "https://dazzlone-default-rtdb.firebaseio.com",
-  projectId: "dazzlone",
-  storageBucket: "dazzlone.appspot.com",
-  messagingSenderId: "382204259427",
-  appId: "1:382204259427:web:082bded8ccdd8f03329c56",
-  measurementId: "G-CMCHP4WLH8"
+  databaseURL: "https://ai-dazz-default-rtdb.firebaseio.com",
+  projectId: "ai-dazz",
+  storageBucket: "ai-dazz.firebasestorage.app",
+  messagingSenderId: "976260640131",
+  appId: "1:976260640131:web:ce5c5e113656a0a2f59ab6",
+  measurementId: "G-T45W4BJ4Z0"
 };
 
 const app = initializeApp(firebaseConfig);
